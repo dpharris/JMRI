@@ -9,8 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class implements a SignalMast that use <B>Extended Accessory Decoder
- * Control Packet Format</B>
+ * This class implements a SignalMast that use EventIDs
  * and outputs that packet to the DCC System via the generic CommandStation
  * interface
  * <P>
