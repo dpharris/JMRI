@@ -130,7 +130,7 @@ public class AddSignalMastPanel extends JPanel {
 
         signalMastDriver = new JComboBox<>(new String[]{
             Bundle.getMessage("HeadCtlMast"), Bundle.getMessage("TurnCtlMast"), Bundle.getMessage("VirtualMast"),
-            Bundle.getMessage("MatrixCtlMast"), Bundle.getMessage("DCCMast") ////, Bundle.getMessage("DCCMast")
+            Bundle.getMessage("MatrixCtlMast"), Bundle.getMessage("DCCMast"), Bundle.getMessage("EventMast")
         });
 
         List<jmri.CommandStation> connList = jmri.InstanceManager.getList(jmri.CommandStation.class);
@@ -439,16 +439,16 @@ public class AddSignalMastPanel extends JPanel {
             
             updateSelectedDriver();
             SignalAppearanceMap appMap = mast.getAppearanceMap();
-            EventSignalMast dmast = (EventSignalMast) mast;
+            EventSignalMast emast = (EventSignalMast) mast;
             
             if (appMap != null) {
                 Enumeration<String> aspects = appMap.getAspects();
                 while (aspects.hasMoreElements()) {
                     String key = aspects.nextElement();
-                    EventAspectPanel eventPanel = dccAspect.get(key);
-                    eventPanel.setAspectDisabled(dmast.isAspectDisabled(key));
-                    if (!dmast.isAspectDisabled(key)) {
-                        eventPanel.setAspectId(dmast.getOutputForAppearance(key));
+                    EventAspectPanel eventPanel = eventAspect.get(key);
+                    eventPanel.setAspectDisabled(emast.isAspectDisabled(key));
+                    if (!emast.isAspectDisabled(key)) {
+                        eventPanel.setEventId(emast.getOutputForAppearance(key));
                     }
                     
                 }
@@ -463,14 +463,14 @@ public class AddSignalMastPanel extends JPanel {
                 systemPrefixBox.addItem("None");
             }
             //dccAspectAddressField.setText("" + dmast.getDccSignalMastAddress());
-            systemPrefixBox.setSelectedItem(dmast.getCommandStation().getUserName());
+            systemPrefixBox.setSelectedItem(emast.getCommandStation().getUserName());
             
             systemPrefixBoxLabel.setEnabled(false);
             systemPrefixBox.setEnabled(false);
             //dccAspectAddressLabel.setEnabled(false);
             //dccAspectAddressField.setEnabled(false);
-            if (dmast.allowUnLit()) {
-                unLitAspectField.setText("" + dmast.getUnlitId());
+            if (emast.allowUnLit()) {
+                unLitAspectField.setText("" + emast.getUnlitId());
             }
 ////////////////////////////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         } else if (mast instanceof jmri.implementation.MatrixSignalMast) {
@@ -965,6 +965,7 @@ public class AddSignalMastPanel extends JPanel {
                 }
                 InstanceManager.getDefault(jmri.SignalMastManager.class).register(dccMast);
 ///////////////////vvvvvvvvvvvvvvvvvvvvv
+                
             } else if ((Bundle.getMessage("EventMast").equals(signalMastDriver.getSelectedItem())) ) {
                 //if (!validateDCCAddress()) {
                 //    return;
@@ -987,7 +988,7 @@ public class AddSignalMastPanel extends JPanel {
                         eventMast.setAspectDisabled(aspect);
                     } else {
                         eventMast.setAspectEnabled(aspect);
-                        eventMast.setOutputForAppearance(aspect, eventAspect.get(aspect).getAspectId());
+                        eventMast.setOutputForAppearance(aspect, eventAspect.get(aspect).getEventId());
                     }
                 }
                 if (!user.equals("")) {
@@ -998,6 +999,7 @@ public class AddSignalMastPanel extends JPanel {
                     eventMast.setUnlitId(Integer.parseInt(unLitAspectField.getText()));
                 }
                 InstanceManager.getDefault(jmri.SignalMastManager.class).register(eventMast);
+                
 //////////////////// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             } else if (Bundle.getMessage("MatrixCtlMast").equals(signalMastDriver.getSelectedItem())) {
                 // Create was pressed for new mast, check all boxes are filled
@@ -1138,6 +1140,7 @@ public class AddSignalMastPanel extends JPanel {
                     dccMast.setUnlitId(Integer.parseInt(unLitAspectField.getText()));
                 }
 /////////////////vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+                
             } else if ((Bundle.getMessage("EventMast").equals(signalMastDriver.getSelectedItem())) ) {
                 EventSignalMast eventMast = (EventSignalMast) mast;
                 for (String aspect : eventAspect.keySet()) {
@@ -1146,13 +1149,14 @@ public class AddSignalMastPanel extends JPanel {
                         eventMast.setAspectDisabled(aspect);
                     } else {
                         eventMast.setAspectEnabled(aspect);
-                        eventMast.setOutputForAppearance(aspect, eventAspect.get(aspect).getAspectId());
+                        eventMast.setOutputForAppearance(aspect, eventAspect.get(aspect).getEventId());
                     }
                 }
                 eventMast.setAllowUnLit(allowUnLit.isSelected());
                 if (allowUnLit.isSelected()) {
                     eventMast.setUnlitId(Integer.parseInt(unLitAspectField.getText()));
-                }
+                 }
+                
 /////////////////////^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
             } else if (Bundle.getMessage("MatrixCtlMast").equals(signalMastDriver.getSelectedItem())) {
                 // Apply was pressed, store existing MatrixMast
@@ -1788,9 +1792,11 @@ public class AddSignalMastPanel extends JPanel {
     }
 
     //////////////////vvvvvvvvvvvvvvvvvv
+    /////////////////////////////////////////////////
     // Start of eventMast panel
-    //JPanel eventUnLitPanel = new JPanel();
-    //JTextField unLitAspectField = new JTextField(5);
+    
+    JPanel eventUnLitPanel = new JPanel();
+    JTextField eventUnLitAspectField = new JTextField(5);
     
     LinkedHashMap<String, EventAspectPanel> eventAspect = new LinkedHashMap<>(10); // only used once, see updateDCCAspectPanel()
     
@@ -1800,7 +1806,7 @@ public class AddSignalMastPanel extends JPanel {
         eventDetails.add(new JLabel(Bundle.getMessage("EventMastSetAspectId") + ":"));
         eventDetails.add(unLitAspectField);
         unLitAspectField.setText("31");
-        eventUnLitPanel.add(dccDetails);
+        eventUnLitPanel.add(eventDetails);
         TitledBorder border = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black));
         border.setTitle(Bundle.getMessage("EventUnlitAspectNumber"));
         eventUnLitPanel.setBorder(border);
@@ -1810,7 +1816,7 @@ public class AddSignalMastPanel extends JPanel {
                 if (unLitAspectField.getText().equals("")) {
                     return;
                 }
-                if (!validateEventAspectId(unLitAspectField.getText())) {
+                if (!validateEventId(unLitAspectField.getText())) {
                     unLitAspectField.requestFocusInWindow();
                 }
             }
@@ -1846,7 +1852,7 @@ public class AddSignalMastPanel extends JPanel {
             String aspect = aspects.nextElement();
             EventAspectPanel aPanel = new EventAspectPanel(aspect);
             eventAspect.put(aspect, aPanel);
-            aPanel.setAspectId((String) sigsys.getProperty(aspect, "eventAspect"));
+            aPanel.setEventId((String) sigsys.getProperty(aspect, "eventAspect"));
         }
         eventMastPanel.removeAll();
         eventMastPanel.setLayout(new jmri.util.javaworld.GridLayout2(dccAspect.size() + 3, 2));
@@ -1867,12 +1873,12 @@ public class AddSignalMastPanel extends JPanel {
         if ((eventAspect.size() & 1) == 1) {
             eventMastPanel.add(new JLabel()); // spacer
         }
-        eventMastPanel.add(new JLabel(Bundle.getMessage("EventMastCopyAspectId") + ":"));
+        eventMastPanel.add(new JLabel(Bundle.getMessage("EventMastCopyEventId") + ":"));
         eventMastPanel.add(copyFromMastSelection());
         
     }
 
-    static boolean validateEventAspectId(String strAspect) {
+    static boolean validateEventId(String strAspect) {
         int aspect;
         try {
             aspect = Integer.parseInt(strAspect.trim());
@@ -1895,23 +1901,23 @@ public class AddSignalMastPanel extends JPanel {
             if (mast.isAspectDisabled(aspect)) {
                 eventAspect.get(aspect).setAspectDisabled(true);
             } else {
-                eventAspect.get(aspect).setAspectId(mast.getOutputForAppearance(aspect));
+                eventAspect.get(aspect).setEventId(mast.getOutputForAppearance(aspect));
             }
         }
     }
     
-    /**
-     * JPanel to define properties of an Aspect for a Event Signal Mast.
-     * <p>
-     * Invoked from the AddSignalMastPanel class when a Event Signal Mast is
-     * selected.
-     */
+    //
+    // JPanel to define properties of an Aspect for a Event Signal Mast.
+    // <p>
+    // Invoked from the AddSignalMastPanel class when a Event Signal Mast is
+    // selected.
+    
     static class EventAspectPanel {
         
         String aspect = "";
         JCheckBox disabledCheck = new JCheckBox(Bundle.getMessage("DisableAspect"));
-        JLabel aspectLabel = new JLabel(Bundle.getMessage("EventMastSetAspectId") + ":");
-        JTextField aspectId = new JTextField(5);
+        JLabel eventLabel = new JLabel(Bundle.getMessage("EventMastSetEventId") + ":");
+        JTextField eventId = new JTextField(5);
         
         EventAspectPanel(String aspect) {
             this.aspect = aspect;
@@ -1920,11 +1926,11 @@ public class AddSignalMastPanel extends JPanel {
         void setAspectDisabled(boolean boo) {
             disabledCheck.setSelected(boo);
             if (boo) {
-                aspectLabel.setEnabled(false);
-                aspectId.setEnabled(false);
+                eventLabel.setEnabled(false);
+                eventId.setEnabled(false);
             } else {
-                aspectLabel.setEnabled(true);
-                aspectId.setEnabled(true);
+                eventLabel.setEnabled(true);
+                eventId.setEnabled(true);
             }
         }
         
@@ -1934,7 +1940,7 @@ public class AddSignalMastPanel extends JPanel {
         
         int getEventId() {
             try {
-                String value = eventId.getText();
+                String value = "01.02.03.04.05.06.07.08";  /////////////////eventId.getText();
                 return Integer.parseInt(value);
                 
             } catch (Exception ex) {
@@ -1944,10 +1950,10 @@ public class AddSignalMastPanel extends JPanel {
         }
         
         void setEventId(int i) {
-            aspectId.setText("" + i);
+            eventId.setText("" + i);
         }
         
-        void setAspectId(String s) {
+        void setEventId(String s) {
             eventId.setText(s);
         }
         
@@ -1958,14 +1964,14 @@ public class AddSignalMastPanel extends JPanel {
                 panel = new JPanel();
                 panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
                 JPanel eventDetails = new JPanel();
-                eventDetails.add(aspectLabel);
-                eventDetails.add(aspectId);
+                eventDetails.add(eventLabel);
+                eventDetails.add(eventId);
                 panel.add(eventDetails);
                 panel.add(disabledCheck);
                 TitledBorder border = BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black));
                 border.setTitle(aspect);
                 panel.setBorder(border);
-                aspectId.addFocusListener(new FocusListener() {
+                eventId.addFocusListener(new FocusListener() {
                     @Override
                     public void focusLost(FocusEvent e) {
                         if (eventId.getText().equals("")) {
