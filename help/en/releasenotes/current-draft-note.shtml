@@ -116,7 +116,7 @@
 
         <h4><a href="http://openlcb.org">OpenLCB</a> / LCC</h4>
             <ul>
-                <li></li>
+                <li>Added OpenLCB or LCC to their menu items, eg "OpenLCB Monitor" or "LCC Monitor", depending on the actual connection.</li>
             </ul>
 
         <h4>RFID</h4>
